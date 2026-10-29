@@ -294,6 +294,7 @@
                                 <option value="Father">Father</option>
                                 <option value="Mother">Mother</option>
                                 <option value="Parent">Parent</option>
+                                <option value="Spouse">Spouse</option>
                                 <option value="Guardian">Guardian</option>
                                 <option value="Brother">Brother</option>
                                 <option value="Sister">Sister</option>
@@ -328,17 +329,24 @@
                             </div>
 
                             <div class="flex flex-col space-y-2.5 w-full sm:w-auto text-left">
-                                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-                                    <p class="text-[10px] text-slate-400 uppercase font-semibold">UPI ID</p>
-                                    <p id="displayUPIID" class="text-sm font-bold text-amber-600 break-all">9702053601-2@ibl</p>
-                                    <p id="displayPayeeName" class="text-[11px] text-slate-600">Payee: Dipti Mishra</p>
+                                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-[10px] text-slate-400 uppercase font-semibold">UPI ID</p>
+                                        <p id="displayUPIID" class="text-sm font-bold text-amber-600 break-all">9702053601-2@ibl</p>
+                                        <p id="displayPayeeName" class="text-[11px] text-slate-600">Payee: Dipti Mishra</p>
+                                    </div>
+                                    <!-- Copy UPI ID Button -->
+                                    <button type="button" onclick="copyUPIID()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold border border-slate-300 transition shrink-0 flex items-center space-x-1">
+                                        <i class="fa-regular fa-copy"></i>
+                                        <span id="copyBtnText">Copy</span>
+                                    </button>
                                 </div>
 
-                                <!-- Secure Copy UPI ID Button -->
-                                <button type="button" onclick="copyUPIID()" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider">
-                                    <i class="fa-regular fa-copy text-base"></i>
-                                    <span id="copyBtnText">Copy UPI ID for Payment</span>
-                                </button>
+                                <!-- Direct Redirection Link -->
+                                <a id="upiPayButton" href="upi://pay?pa=9702053601-2@ibl&pn=Dipti%20Mishra&cu=INR" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider">
+                                    <i class="fa-solid fa-mobile-screen-button text-base"></i>
+                                    <span>Tap to Open Payment App (₹300)</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -711,7 +719,6 @@
             const config = window.appConfig || defaultConfig;
             document.getElementById('displayMarathonName').textContent = config.marathonName;
             
-            // Top Navigation Title fixed to "NHSSA Marathon"
             document.getElementById('navTitle').textContent = "NHSSA Marathon";
             
             document.getElementById('displayBanner').src = config.bannerURL;
@@ -722,7 +729,10 @@
             document.getElementById('displayUPIID').textContent = config.upiID;
             document.getElementById('displayPayeeName').textContent = "Payee: " + config.payeeName;
 
-            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&am=${config.flatFee}&cu=INR`;
+            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&cu=INR`;
+
+            document.getElementById('upiPayButton').href = upiString;
+            document.getElementById('upiPayButton').querySelector('span').textContent = `Tap to Open Payment App (₹${config.flatFee})`;
 
             const qrImg = document.getElementById('displayQRImage');
             if (config.qrURL && config.qrURL.trim() !== '') {
@@ -732,17 +742,17 @@
             }
         };
 
-        // Secure Copy UPI ID Function
+        // Copy UPI ID Function
         function copyUPIID() {
             const upiText = document.getElementById('displayUPIID').textContent;
             navigator.clipboard.writeText(upiText).then(() => {
                 const btnText = document.getElementById('copyBtnText');
-                btnText.textContent = "UPI ID Copied Successfully!";
+                btnText.textContent = "Copied!";
                 setTimeout(() => {
-                    btnText.textContent = "Copy UPI ID for Payment";
-                }, 3000);
+                    btnText.textContent = "Copy";
+                }, 2000);
             }).catch(err => {
-                alert('Failed to copy UPI ID');
+                console.error('Failed to copy: ', err);
             });
         }
 
@@ -1018,7 +1028,7 @@
                     `"${r.paymentMode || ''}","${r.utr || ''}","${r.date || ''}"\n`;
             });
 
-            const encodedUri = encodeURI(encodedUri = encodeURI(csvContent));
+            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
             link.setAttribute("download", "NHSSA_Marathon_Full_Registrations_2026.csv");
