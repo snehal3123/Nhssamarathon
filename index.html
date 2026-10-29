@@ -723,7 +723,8 @@
             document.getElementById('displayUPIID').textContent = config.upiID;
             document.getElementById('displayPayeeName').textContent = "Payee: " + config.payeeName;
 
-            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&am=${config.flatFee}&cu=INR`;
+            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&cu=INR`;
+
             document.getElementById('upiPayButton').href = upiString;
             document.getElementById('upiPayButton').querySelector('span').textContent = `Tap to Open Payment App (₹${config.flatFee})`;
 
