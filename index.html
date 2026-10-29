@@ -294,6 +294,7 @@
                                 <option value="Father">Father</option>
                                 <option value="Mother">Mother</option>
                                 <option value="Parent">Parent</option>
+                                <option value="Spouse">Spouse</option>
                                 <option value="Guardian">Guardian</option>
                                 <option value="Brother">Brother</option>
                                 <option value="Sister">Sister</option>
@@ -324,7 +325,7 @@
                         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <!-- QR Code Box -->
                             <div class="bg-white p-2.5 rounded-xl shadow border border-slate-200 w-40 h-40 flex flex-col items-center justify-center shrink-0">
-                                <img id="displayQRImage" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=nhssa@upi%26pn=NHSSA%20Marathon%26am=300%26cu=INR" alt="Payment QR Code" class="w-full h-full object-contain">
+                                <img id="displayQRImage" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=9702053601-2@ibl%26pn=Dipti%20Mishra%26am=300%26cu=INR" alt="Payment QR Code" class="w-full h-full object-contain">
                             </div>
 
                             <div class="flex flex-col space-y-2.5 w-full sm:w-auto text-left">
@@ -335,7 +336,7 @@
                                 </div>
 
                                 <!-- Direct Redirection Link -->
-                                <a id="upiPayButton" href="upi://pay?pa=nhssa@upi&pn=NHSSA%20Marathon&am=300&cu=INR" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider">
+                                <a id="upiPayButton" href="upi://pay?pa=9702053601-2@ibl&pn=Dipti%20Mishra&am=300&cu=INR" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider">
                                     <i class="fa-solid fa-mobile-screen-button text-base"></i>
                                     <span>Tap to Open Payment App (₹300)</span>
                                 </a>
@@ -596,12 +597,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // Firebase Configuration
+        // Corrected Firebase Configuration matching your active Realtime Database
         const firebaseConfig = {
             apiKey: "AIzaSyAvWeMNEgyZaq0l7Rr0pgLFk_ThkymUi6Y",
             authDomain: "nhssamarathon.firebaseapp.com",
-            databaseURL: "https://nhssamarathon-default-rtdb.firebaseio.com", // Realtime Database URL
-            projectId: "nhssamarathon",
+            databaseURL: "https://nhssamarathon-6b63a-default-rtdb.firebaseio.com",
+            projectId: "nhssamarathon-6b63a",
             storageBucket: "nhssamarathon.firebasestorage.app",
             messagingSenderId: "961048657559",
             appId: "1:961048657559:web:55d4a470bb88146fc1f3d2",
@@ -686,14 +687,14 @@
     <!-- UI Logic Scripts -->
     <script>
         const defaultConfig = {
-            marathonName: "NHSSA- Marathon Registration 2026",
+            marathonName: "NHSSA Marathon Season 3 2026",
             bannerURL: "https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=1200&q=80",
             qrURL: "",
-            upiID: "nhssa@upi",
-            payeeName: "NHSSA Sports Association",
+            upiID: "9702053601-2@ibl",
+            payeeName: "Dipti Mishra",
             flatFee: 300,
-            eventDate: "18 Jan 2026",
-            venue: "NHSSA Ground, Airoli"
+            eventDate: "22 November 2026",
+            venue: "New Horizon Scholars School Airoli"
         };
 
         window.appConfig = { ...defaultConfig };
@@ -719,7 +720,7 @@
             document.getElementById('displayBanner').src = config.bannerURL;
             document.getElementById('tickerDate').textContent = config.eventDate;
             document.getElementById('tickerVenue').textContent = config.venue;
-            document.getElementById('tickerFee').textContent = `₹ ${config.flatFee} (Flat)`;
+            document.getElementById('tickerFee').textContent = `₹ ${config.flatFee}`;
             document.getElementById('displayFeeAmount').textContent = `₹ ${config.flatFee}`;
             document.getElementById('displayUPIID').textContent = config.upiID;
             document.getElementById('displayPayeeName').textContent = "Payee: " + config.payeeName;
@@ -966,7 +967,7 @@
             e.preventDefault();
             window.appConfig.marathonName = document.getElementById('adminMarathonName').value;
             window.appConfig.upiID = document.getElementById('adminUPIID').value;
-            window.appConfig.payeeName = document.getElementById('adminPayeeName_?.value') || document.getElementById('adminPayeeName').value;
+            window.appConfig.payeeName = document.getElementById('adminPayeeName').value;
             window.appConfig.flatFee = parseInt(document.getElementById('adminFee').value) || 300;
             window.appConfig.eventDate = document.getElementById('adminEventDate').value;
             window.appConfig.venue = document.getElementById('adminVenue').value;
