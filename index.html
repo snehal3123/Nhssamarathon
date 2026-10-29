@@ -303,8 +303,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- SECTION 4: Payment Details -->
+<!-- SECTION 4: Payment Details -->
             <div class="white-card rounded-2xl p-5 border-2 border-orange-500/40 relative">
                 <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4 gap-2">
                     <div class="flex items-center space-x-2">
@@ -551,8 +550,7 @@
                         <button type="submit" class="w-2/3 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-xl shadow">Save Settings</button>
                     </div>
                 </form>
-
-                <!-- Section 2: Registrations Data & CSV Export -->
+<!-- Section 2: Registrations Data & CSV Export -->
                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                     <div class="flex justify-between items-center">
                         <div>
@@ -591,50 +589,60 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Setup -->
+    <!-- Firebase SDK Setup for Global Realtime Database Sync -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBUcpAruSyyM2xao2dc5DMY1xbGmwPl-WM",
-            authDomain: "nhssamarathon-6b63a.firebaseapp.com",
-            projectId: "nhssamarathon-6b63a",
-            storageBucket: "nhssamarathon-6b63a.firebasestorage.app",
-            messagingSenderId: "296490276412",
-            appId: "1:296490276412:web:76f8e8b916fc23308a5539",
-            measurementId: "G-T5RMC0G6MZ"
+            apiKey: "AIzaSyAvWeMNEgyZaq0l7Rr0pgLFk_ThkymUi6Y",
+            authDomain: "nhssamarathon.firebaseapp.com",
+            projectId: "nhssamarathon",
+            storageBucket: "nhssamarathon.firebasestorage.app",
+            messagingSenderId: "961048657559",
+            appId: "1:961048657559:web:55d4a470bb88146fc1f3d2",
+            measurementId: "G-B4TWTFDJZK"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nhssa-marathon-2026';
-
         let user = null;
         let registrationsList = [];
 
         async function initAuth() {
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                    user = userCredential.user;
-                } else {
-                    const userCredential = await signInAnonymously(auth);
-                    user = userCredential.user;
-                }
+                const userCredential = await signInAnonymously(auth);
+                user = userCredential.user;
+                listenToConfig();
                 listenToRegistrations();
             } catch (err) {
                 console.error("Firebase Auth Error:", err);
             }
         }
 
+        // Live Config Sync across all devices
+        function listenToConfig() {
+            const configDocRef = doc(db, 'marathon_settings', 'global_config');
+            onSnapshot(configDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    window.appConfig = docSnap.data();
+                    localStorage.setItem('nhssa_config', JSON.stringify(window.appConfig));
+                    if (window.applyConfigToUI) {
+                        window.applyConfigToUI();
+                    }
+                }
+            }, (error) => {
+                console.error("Firestore Config Listen Error:", error);
+            });
+        }
+
+        // Live Registrations Sync for Admin Panel
         function listenToRegistrations() {
-            if (!user) return;
-            const regColRef = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+            const regColRef = collection(db, 'marathon_registrations');
             
             onSnapshot(regColRef, (snapshot) => {
                 registrationsList = [];
@@ -651,12 +659,22 @@
             });
         }
 
+        // Save Registration directly to Cloud Firestore
         window.saveRegistrationToFirestore = async function(regData) {
             if (!user) {
                 await signInAnonymously(auth);
             }
-            const regColRef = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+            const regColRef = collection(db, 'marathon_registrations');
             await addDoc(regColRef, regData);
+        };
+
+        // Save Admin Settings directly to Cloud Firestore
+        window.saveConfigToFirestore = async function(configData) {
+            if (!user) {
+                await signInAnonymously(auth);
+            }
+            const configDocRef = doc(db, 'marathon_settings', 'global_config');
+            await setDoc(configDocRef, configData, { merge: true });
         };
 
         window.renderAdminTable = function() {
@@ -695,7 +713,7 @@
             venue: "NHSSA Ground, Airoli"
         };
 
-        let appConfig = {};
+        window.appConfig = { ...defaultConfig };
 
         window.onload = function() {
             loadConfig();
@@ -705,34 +723,36 @@
 
         function loadConfig() {
             const saved = localStorage.getItem('nhssa_config');
-            appConfig = saved ? JSON.parse(saved) : { ...defaultConfig };
+            if (saved) {
+                window.appConfig = JSON.parse(saved);
+            }
             applyConfigToUI();
         }
 
-        function applyConfigToUI() {
-            document.getElementById('displayMarathonName').textContent = appConfig.marathonName;
-            document.getElementById('navTitle').textContent = appConfig.marathonName;
-            document.getElementById('displayBanner').src = appConfig.bannerURL;
-            document.getElementById('tickerDate').textContent = appConfig.eventDate;
-            document.getElementById('tickerVenue').textContent = appConfig.venue;
-            document.getElementById('tickerFee').textContent = `₹ ${appConfig.flatFee} (Flat)`;
-            document.getElementById('displayFeeAmount').textContent = `₹ ${appConfig.flatFee}`;
-            document.getElementById('displayUPIID').textContent = appConfig.upiID;
-            document.getElementById('displayPayeeName').textContent = "Payee: " + appConfig.payeeName;
+        window.applyConfigToUI = function() {
+            const config = window.appConfig || defaultConfig;
+            document.getElementById('displayMarathonName').textContent = config.marathonName;
+            document.getElementById('navTitle').textContent = config.marathonName;
+            document.getElementById('displayBanner').src = config.bannerURL;
+            document.getElementById('tickerDate').textContent = config.eventDate;
+            document.getElementById('tickerVenue').textContent = config.venue;
+            document.getElementById('tickerFee').textContent = `₹ ${config.flatFee} (Flat)`;
+            document.getElementById('displayFeeAmount').textContent = `₹ ${config.flatFee}`;
+            document.getElementById('displayUPIID').textContent = config.upiID;
+            document.getElementById('displayPayeeName').textContent = "Payee: " + config.payeeName;
 
-            const upiString = `upi://pay?pa=${encodeURIComponent(appConfig.upiID)}&pn=${encodeURIComponent(appConfig.payeeName)}&am=${appConfig.flatFee}&cu=INR`;
+            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&am=${config.flatFee}&cu=INR`;
             document.getElementById('upiPayButton').href = upiString;
-            document.getElementById('upiPayButton').querySelector('span').textContent = `Tap to Open Payment App (₹${appConfig.flatFee})`;
+            document.getElementById('upiPayButton').querySelector('span').textContent = `Tap to Open Payment App (₹${config.flatFee})`;
 
             const qrImg = document.getElementById('displayQRImage');
-            if (appConfig.qrURL && appConfig.qrURL.trim() !== '') {
-                qrImg.src = appConfig.qrURL;
+            if (config.qrURL && config.qrURL.trim() !== '') {
+                qrImg.src = config.qrURL;
             } else {
                 qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
             }
-        }
-
-        function handlePaymentModeChange() {
+        };
+     function handlePaymentModeChange() {
             const mode = document.getElementById('paymentMode').value;
             const utrBox = document.getElementById('utrContainer');
             const cashBox = document.getElementById('cashCollectorContainer');
@@ -925,12 +945,13 @@
         }
 
         function showAdminPanel() {
-            document.getElementById('adminMarathonName').value = appConfig.marathonName;
-            document.getElementById('adminUPIID').value = appConfig.upiID;
-            document.getElementById('adminPayeeName').value = appConfig.payeeName;
-            document.getElementById('adminFee').value = appConfig.flatFee;
-            document.getElementById('adminEventDate').value = appConfig.eventDate;
-            document.getElementById('adminVenue').value = appConfig.venue;
+            const config = window.appConfig || defaultConfig;
+            document.getElementById('adminMarathonName').value = config.marathonName;
+            document.getElementById('adminUPIID').value = config.upiID;
+            document.getElementById('adminPayeeName').value = config.payeeName;
+            document.getElementById('adminFee').value = config.flatFee;
+            document.getElementById('adminEventDate').value = config.eventDate;
+            document.getElementById('adminVenue').value = config.venue;
 
             if (window.renderAdminTable) {
                 window.renderAdminTable();
@@ -948,32 +969,40 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     if (type === 'banner') {
-                        appConfig.bannerURL = e.target.result;
+                        window.appConfig.bannerURL = e.target.result;
                     } else if (type === 'qr') {
-                        appConfig.qrURL = e.target.result;
+                        window.appConfig.qrURL = e.target.result;
                     }
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function saveAdminSettings(e) {
+        async function saveAdminSettings(e) {
             e.preventDefault();
-            appConfig.marathonName = document.getElementById('adminMarathonName').value;
-            appConfig.upiID = document.getElementById('adminUPIID').value;
-            appConfig.payeeName = document.getElementById('adminPayeeName').value;
-            appConfig.flatFee = parseInt(document.getElementById('adminFee').value) || 300;
-            appConfig.eventDate = document.getElementById('adminEventDate').value;
-            appConfig.venue = document.getElementById('adminVenue').value;
+            window.appConfig.marathonName = document.getElementById('adminMarathonName').value;
+            window.appConfig.upiID = document.getElementById('adminUPIID').value;
+            window.appConfig.payeeName = document.getElementById('adminPayeeName').value;
+            window.appConfig.flatFee = parseInt(document.getElementById('adminFee').value) || 300;
+            window.appConfig.eventDate = document.getElementById('adminEventDate').value;
+            window.appConfig.venue = document.getElementById('adminVenue').value;
 
-            localStorage.setItem('nhssa_config', JSON.stringify(appConfig));
+            localStorage.setItem('nhssa_config', JSON.stringify(window.appConfig));
+            
+            if (window.saveConfigToFirestore) {
+                await window.saveConfigToFirestore(window.appConfig);
+            }
+
             applyConfigToUI();
             closeAdminPanelModal();
         }
 
-        function resetAdminDefaults() {
-            appConfig = { ...defaultConfig };
+        async function resetAdminDefaults() {
+            window.appConfig = { ...defaultConfig };
             localStorage.removeItem('nhssa_config');
+            if (window.saveConfigToFirestore) {
+                await window.saveConfigToFirestore(window.appConfig);
+            }
             applyConfigToUI();
             closeAdminPanelModal();
         }
@@ -1005,4 +1034,4 @@
         }
     </script>
 </body>
-</html>
+</html>   
