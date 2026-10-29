@@ -70,17 +70,17 @@
     <!-- Top Navigation & Admin Button -->
     <nav class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm">
         <div class="max-w-3xl mx-auto flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-lg shadow-md">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-extrabold text-lg shadow-md shrink-0">
                     <i class="fa-solid fa-person-running"></i>
                 </div>
-                <div>
-                    <h1 id="navTitle" class="text-base font-black leading-tight tracking-tight text-slate-900 heading-font">NHSSA Marathon 2026</h1>
-                    <p id="navSubTitle" class="text-[10px] text-orange-600 font-bold uppercase tracking-wider">Airoli Sector 13</p>
+                <div class="flex flex-col justify-center">
+                    <h1 id="navTitle" class="text-base sm:text-lg font-black leading-tight tracking-tight text-slate-900 heading-font">NHSSA Marathon</h1>
+                    <p id="navSubTitle" class="text-[10px] text-orange-600 font-bold uppercase tracking-wider mt-0.5">Airoli Sector 13</p>
                 </div>
             </div>
             
-            <button onclick="openAdminModal()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 border border-slate-200 transition touch-active">
+            <button onclick="openAdminModal()" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 border border-slate-200 transition touch-active shadow-sm shrink-0">
                 <i class="fa-solid fa-lock text-orange-600"></i>
                 <span>Admin Login</span>
             </button>
@@ -97,26 +97,26 @@
             
             <div class="absolute bottom-4 left-4 right-4 text-white">
                 <span id="displayBadge" class="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider bg-orange-600 text-white rounded-md inline-block mb-1 shadow">Official Entry Form</span>
-                <h2 id="displayMarathonName" class="text-2xl sm:text-3xl font-black heading-font text-white drop-shadow-md leading-tight">NHSSA Marathon Season 3 2026</h2>
+                <h2 id="displayMarathonName" class="text-xl sm:text-3xl font-black heading-font text-white drop-shadow-md leading-tight">NHSSA Marathon Registration 2026</h2>
             </div>
         </div>
 
         <!-- Event Meta Info Box -->
         <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
-                <i class="fa-regular fa-calendar-check text-orange-600 mb-1"></i>
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                <i class="fa-regular fa-calendar-check text-orange-600 mb-1 text-sm"></i>
                 <span class="text-slate-500 text-[10px] uppercase font-bold">Event Date</span>
-                <span id="tickerDate" class="font-bold text-slate-800">22 November 2026</span>
+                <span id="tickerDate" class="font-bold text-slate-800 mt-0.5">22 November 2026</span>
             </div>
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
-                <i class="fa-solid fa-location-dot text-orange-600 mb-1"></i>
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                <i class="fa-solid fa-location-dot text-orange-600 mb-1 text-sm"></i>
                 <span class="text-slate-500 text-[10px] uppercase font-bold">Venue</span>
-                <span id="tickerVenue" class="font-bold text-slate-800">New Horizon Scholars School Airoli</span>
+                <span id="tickerVenue" class="font-bold text-slate-800 mt-0.5">New Horizon Scholars School Airoli</span>
             </div>
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
-                <i class="fa-solid fa-indian-rupee-sign text-emerald-600 mb-1"></i>
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+                <i class="fa-solid fa-indian-rupee-sign text-emerald-600 mb-1 text-sm"></i>
                 <span class="text-slate-500 text-[10px] uppercase font-bold">Entry Fee</span>
-                <span id="tickerFee" class="font-bold text-emerald-600">₹ 300</span>
+                <span id="tickerFee" class="font-bold text-emerald-600 mt-0.5">₹ 300</span>
             </div>
         </div>
 
@@ -294,7 +294,6 @@
                                 <option value="Father">Father</option>
                                 <option value="Mother">Mother</option>
                                 <option value="Parent">Parent</option>
-                                <option value="Spouse">Spouse</option>
                                 <option value="Guardian">Guardian</option>
                                 <option value="Brother">Brother</option>
                                 <option value="Sister">Sister</option>
@@ -597,7 +596,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // Corrected Firebase Configuration matching your active Realtime Database
         const firebaseConfig = {
             apiKey: "AIzaSyAvWeMNEgyZaq0l7Rr0pgLFk_ThkymUi6Y",
             authDomain: "nhssamarathon.firebaseapp.com",
@@ -614,7 +612,6 @@
 
         let registrationsList = [];
 
-        // Realtime Config Sync
         function listenToConfig() {
             const configRef = ref(db, 'marathon_settings/global_config');
             onValue(configRef, (snapshot) => {
@@ -629,7 +626,6 @@
             });
         }
 
-        // Realtime Registrations Sync
         function listenToRegistrations() {
             const regRef = ref(db, 'marathon_registrations');
             onValue(regRef, (snapshot) => {
@@ -648,13 +644,11 @@
             });
         }
 
-        // Save Registration to Realtime Database
         window.saveRegistrationToDatabase = async function(regData) {
             const regRef = ref(db, 'marathon_registrations');
             await push(regRef, regData);
         };
 
-        // Save Admin Settings to Realtime Database
         window.saveConfigToDatabase = async function(configData) {
             const configRef = ref(db, 'marathon_settings/global_config');
             await set(configRef, configData);
@@ -687,7 +681,7 @@
     <!-- UI Logic Scripts -->
     <script>
         const defaultConfig = {
-            marathonName: "NHSSA Marathon Season 3 2026",
+            marathonName: "NHSSA Marathon Registration 2026",
             bannerURL: "https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=1200&q=80",
             qrURL: "",
             upiID: "9702053601-2@ibl",
@@ -716,7 +710,10 @@
         window.applyConfigToUI = function() {
             const config = window.appConfig || defaultConfig;
             document.getElementById('displayMarathonName').textContent = config.marathonName;
-            document.getElementById('navTitle').textContent = config.marathonName;
+            
+            // Top Navigation Title fixed to "NHSSA Marathon"
+            document.getElementById('navTitle').textContent = "NHSSA Marathon";
+            
             document.getElementById('displayBanner').src = config.bannerURL;
             document.getElementById('tickerDate').textContent = config.eventDate;
             document.getElementById('tickerVenue').textContent = config.venue;
