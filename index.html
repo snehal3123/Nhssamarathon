@@ -97,7 +97,7 @@
             
             <div class="absolute bottom-4 left-4 right-4 text-white">
                 <span id="displayBadge" class="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider bg-orange-600 text-white rounded-md inline-block mb-1 shadow">Official Entry Form</span>
-                <h2 id="displayMarathonName" class="text-2xl sm:text-3xl font-black heading-font text-white drop-shadow-md leading-tight">NHSSA- Marathon Registration 2026</h2>
+                <h2 id="displayMarathonName" class="text-2xl sm:text-3xl font-black heading-font text-white drop-shadow-md leading-tight">NHSSA Marathon Season 3 2026</h2>
             </div>
         </div>
 
@@ -111,7 +111,7 @@
             <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
                 <i class="fa-solid fa-location-dot text-orange-600 mb-1"></i>
                 <span class="text-slate-500 text-[10px] uppercase font-bold">Venue</span>
-                <span id="tickerVenue" class="font-bold text-slate-800">New Horizon Scolars School Airoli</span>
+                <span id="tickerVenue" class="font-bold text-slate-800">New Horizon Scholars School Airoli</span>
             </div>
             <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
                 <i class="fa-solid fa-indian-rupee-sign text-emerald-600 mb-1"></i>
@@ -189,7 +189,7 @@
                             <option value="F">F</option>
                             <option value="G">G</option>
                             <option value="H">H</option>
-                            <option value="G">I</option>
+                            <option value="I">I</option>
                         </select>
                     </div>
                 </div>
@@ -293,7 +293,8 @@
                                 <option value="">Select Relationship</option>
                                 <option value="Father">Father</option>
                                 <option value="Mother">Mother</option>
-                                <option value="Parent">Parent</option>                                <option value="Guardian">Guardian</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Guardian">Guardian</option>
                                 <option value="Brother">Brother</option>
                                 <option value="Sister">Sister</option>
                                 <option value="Other">Other</option>
@@ -330,7 +331,7 @@
                                 <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                                     <p class="text-[10px] text-slate-400 uppercase font-semibold">UPI ID</p>
                                     <p id="displayUPIID" class="text-sm font-bold text-amber-600 break-all">9702053601-2@ibl</p>
-                                    <p id="displayPayeeName" class="text-[11px] text-slate-600">Payee: NHSSA Sports</p>
+                                    <p id="displayPayeeName" class="text-[11px] text-slate-600">Payee: Dipti Mishra</p>
                                 </div>
 
                                 <!-- Direct Redirection Link -->
@@ -556,7 +557,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h4 class="font-bold text-emerald-700 uppercase tracking-wider text-[11px]">Submitted Registrations</h4>
-                            <p class="text-[10px] text-slate-500">LiveSynced with Firebase Firestore</p>
+                            <p class="text-[10px] text-slate-500">LiveSynced with Firebase Realtime Database</p>
                         </div>
                         <button onclick="exportToCSV()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center space-x-1.5 shadow">
                             <i class="fa-solid fa-file-csv text-sm"></i>
@@ -590,16 +591,16 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Setup for Global Realtime Database Sync -->
+    <!-- Firebase SDK Setup for Realtime Database Sync -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAvWeMNEgyZaq0l7Rr0pgLFk_ThkymUi6Y",
             authDomain: "nhssamarathon.firebaseapp.com",
+            databaseURL: "https://nhssamarathon-default-rtdb.firebaseio.com", // Realtime Database URL
             projectId: "nhssamarathon",
             storageBucket: "nhssamarathon.firebasestorage.app",
             messagingSenderId: "961048657559",
@@ -608,74 +609,54 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
-        let user = null;
         let registrationsList = [];
 
-        async function initAuth() {
-            try {
-                const userCredential = await signInAnonymously(auth);
-                user = userCredential.user;
-                listenToConfig();
-                listenToRegistrations();
-            } catch (err) {
-                console.error("Firebase Auth Error:", err);
-            }
-        }
-
-        // Fixed Config Listener Path across devices
+        // Realtime Config Sync
         function listenToConfig() {
-            const configDocRef = doc(db, 'artifacts', 'nhssa-marathon-2026', 'public', 'settings');
-            onSnapshot(configDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    window.appConfig = docSnap.data();
+            const configRef = ref(db, 'marathon_settings/global_config');
+            onValue(configRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.appConfig = data;
                     localStorage.setItem('nhssa_config', JSON.stringify(window.appConfig));
                     if (window.applyConfigToUI) {
                         window.applyConfigToUI();
                     }
                 }
-            }, (error) => {
-                console.error("Firestore Config Listen Error:", error);
             });
         }
 
-        // Fixed Registrations Collection Path across devices
+        // Realtime Registrations Sync
         function listenToRegistrations() {
-            const regColRef = collection(db, 'artifacts', 'nhssa-marathon-2026', 'public', 'data', 'registrations');
-            
-            onSnapshot(regColRef, (snapshot) => {
+            const regRef = ref(db, 'marathon_registrations');
+            onValue(regRef, (snapshot) => {
                 registrationsList = [];
-                snapshot.forEach((doc) => {
-                    registrationsList.push({ id: doc.id, ...doc.data() });
-                });
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach((key) => {
+                        registrationsList.push({ id: key, ...data[key] });
+                    });
+                }
                 registrationsList.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
                 window.registrationsList = registrationsList;
                 if (!document.getElementById('adminPanelModal').classList.contains('hidden')) {
                     renderAdminTable();
                 }
-            }, (error) => {
-                console.error("Firestore Listen Error:", error);
             });
         }
 
-        // Save Registration directly to Cloud Firestore
-        window.saveRegistrationToFirestore = async function(regData) {
-            if (!user) {
-                await signInAnonymously(auth);
-            }
-            const regColRef = collection(db, 'artifacts', 'nhssa-marathon-2026', 'public', 'data', 'registrations');
-            await addDoc(regColRef, regData);
+        // Save Registration to Realtime Database
+        window.saveRegistrationToDatabase = async function(regData) {
+            const regRef = ref(db, 'marathon_registrations');
+            await push(regRef, regData);
         };
 
-        // Save Admin Settings directly to Cloud Firestore
-        window.saveConfigToFirestore = async function(configData) {
-            if (!user) {
-                await signInAnonymously(auth);
-            }
-            const configDocRef = doc(db, 'artifacts', 'nhssa-marathon-2026', 'public', 'settings');
-            await setDoc(configDocRef, configData, { merge: true });
+        // Save Admin Settings to Realtime Database
+        window.saveConfigToDatabase = async function(configData) {
+            const configRef = ref(db, 'marathon_settings/global_config');
+            await set(configRef, configData);
         };
 
         window.renderAdminTable = function() {
@@ -698,7 +679,8 @@
             }
         };
 
-        initAuth();
+        listenToConfig();
+        listenToRegistrations();
     </script>
 
     <!-- UI Logic Scripts -->
@@ -881,11 +863,11 @@
             };
 
             try {
-                if (window.saveRegistrationToFirestore) {
-                    await window.saveRegistrationToFirestore(newReg);
+                if (window.saveRegistrationToDatabase) {
+                    await window.saveRegistrationToDatabase(newReg);
                 }
             } catch (err) {
-                console.error("Firestore submission error:", err);
+                console.error("Database submission error:", err);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Submit Registration</span>`;
@@ -984,15 +966,15 @@
             e.preventDefault();
             window.appConfig.marathonName = document.getElementById('adminMarathonName').value;
             window.appConfig.upiID = document.getElementById('adminUPIID').value;
-            window.appConfig.payeeName = document.getElementById('adminPayeeName').value;
+            window.appConfig.payeeName = document.getElementById('adminPayeeName_?.value') || document.getElementById('adminPayeeName').value;
             window.appConfig.flatFee = parseInt(document.getElementById('adminFee').value) || 300;
             window.appConfig.eventDate = document.getElementById('adminEventDate').value;
             window.appConfig.venue = document.getElementById('adminVenue').value;
 
             localStorage.setItem('nhssa_config', JSON.stringify(window.appConfig));
             
-            if (window.saveConfigToFirestore) {
-                await window.saveConfigToFirestore(window.appConfig);
+            if (window.saveConfigToDatabase) {
+                await window.saveConfigToDatabase(window.appConfig);
             }
 
             applyConfigToUI();
@@ -1002,8 +984,8 @@
         async function resetAdminDefaults() {
             window.appConfig = { ...defaultConfig };
             localStorage.removeItem('nhssa_config');
-            if (window.saveConfigToFirestore) {
-                await window.saveConfigToFirestore(window.appConfig);
+            if (window.saveConfigToDatabase) {
+                await window.saveConfigToDatabase(window.appConfig);
             }
             applyConfigToUI();
             closeAdminPanelModal();
