@@ -342,11 +342,11 @@
                                     </button>
                                 </div>
 
-                                <!-- Direct Redirection Link -->
-                                <a id="upiPayButton" href="upi://pay?pa=9702053601-2@ibl&pn=Dipti%20Mishra&cu=INR" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider">
+                                <!-- Open UPI Apps Home Page Button (Without direct forced payment link) -->
+                                <button type="button" onclick="openPaymentApp()" class="w-full inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-4 py-3 rounded-xl shadow-md transition touch-active text-xs uppercase tracking-wider cursor-pointer">
                                     <i class="fa-solid fa-mobile-screen-button text-base"></i>
-                                    <span>Tap to Open Payment App (₹300)</span>
-                                </a>
+                                    <span>Open Payment App (GPay / PhonePe)</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -729,18 +729,21 @@
             document.getElementById('displayUPIID').textContent = config.upiID;
             document.getElementById('displayPayeeName').textContent = "Payee: " + config.payeeName;
 
-            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&cu=INR`;
-
-            document.getElementById('upiPayButton').href = upiString;
-            document.getElementById('upiPayButton').querySelector('span').textContent = `Tap to Open Payment App (₹${config.flatFee})`;
-
             const qrImg = document.getElementById('displayQRImage');
+            const upiString = `upi://pay?pa=${encodeURIComponent(config.upiID)}&pn=${encodeURIComponent(config.payeeName)}&am=${config.flatFee}&cu=INR`;
+            
             if (config.qrURL && config.qrURL.trim() !== '') {
                 qrImg.src = config.qrURL;
             } else {
                 qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
             }
         };
+
+        // Open Payment App Home Page safely without direct forced transaction error
+        function openPaymentApp() {
+            // This opens generic payment handler or prompts user to choose UPI app
+            window.location.href = "upi://";
+        }
 
         // Copy UPI ID Function
         function copyUPIID() {
