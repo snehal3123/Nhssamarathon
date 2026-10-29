@@ -741,9 +741,26 @@
 
         // Open Payment App Home Page safely without direct forced transaction error
         function openPaymentApp() {
-            // This opens generic payment handler or prompts user to choose UPI app
-            window.location.href = "upi://";
-        }
+    const config = window.appConfig || defaultConfig;
+    const upiID = encodeURIComponent(config.upiID);
+    const payeeName = encodeURIComponent(config.payeeName);
+    const amount = config.flatFee;
+    
+    // Standard UPI intent string
+    const upiUrl = `upi://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR`;
+
+    // For Android devices, wrapping it in an intent scheme often forces the system app-chooser sheet
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
+    if (isAndroid) {
+        const intentUrl = `intent://pay?pa=${upiID}&pn=${payeeName}&am=${amount}&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end;`;
+        // Fallback to standard upi:// if intent fails or opens browser chooser
+        window.location.href = upiUrl;
+    } else {
+        // For iOS (iPhone/iPad) and others
+        window.location.href = upiUrl;
+    }
+}
 
         // Copy UPI ID Function
         function copyUPIID() {
